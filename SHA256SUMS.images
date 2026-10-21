@@ -1,0 +1,5 @@
+# Decompressed images. Check with:
+#   sha256sum -c --ignore-missing SHA256SUMS.images
+# --ignore-missing lets you verify one board without extracting the other.
+2a64be760e37b5f253342c2b810d4a70a1f233616199076923f562d14f901563  images/sdcard-dock-dsp.img
+1b5001a7d14167d513afc5b3c35ef623bd86485b5d905f8e72a55c9d1955bd04  images/sdcard-nezha-dsp.img
