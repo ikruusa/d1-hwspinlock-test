@@ -27,8 +27,30 @@ The loss rate **varies between runs** (5.3 %, 5.7 %, 17.3 % and 18.7 % have been
 observed). Treat the percentage as one sample; the qualitative result is what
 reproduces.
 
-The lock is not free: about 11.4 µs per take/free on the C906, against ~3.3 µs
-for the unprotected read-modify-write it protects.
+The lock is not free, but most of what it costs is not the lock. Measured
+separately on the C906 with the DSP idle (1 M iterations each):
+
+| Step | ns per take/free |
+|---|---|
+| bare register access: `readl()` to take, `writel()` to release | **850** |
+| the same plus the two `mb()` the hwspinlock core issues | 870 |
+| through `hwspin_lock_timeout()` + `hwspin_unlock()` | 8 200 – 8 600 |
+| the same pair on the DSP, bare metal (wall clock) | ~500 |
+
+The hardware path is 0.85 µs and the memory barriers are effectively free
+(21 ns for both); the remaining ~7.7 µs is the Linux side — the call into the
+hwspinlock core, the timeout bookkeeping and the core's own spinlock.
+
+⚠️ **Read the Linux figure with care.** This board's bootloader never enables the
+C906 caches — `MHCR.IE` and `MHCR.DE` both reset to 0 and nothing in the boot
+chain sets them — so every normal-memory access costs ~150 ns here and function
+calls are disproportionately expensive. Measure a load from a hot 256-byte
+buffer and it reports 147 ns instead of ~1 ns. The 0.85 µs hardware figure and
+the DSP's ~0.5 µs are measured the same way and are not affected by that.
+
+The benchmark numbers come from a later build of the test module than the
+published images (`d1_hwlock_test` gained a `bench=` option after them); the
+images run the contention test only.
 
 ## Versions
 
