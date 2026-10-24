@@ -48,9 +48,9 @@ calls are disproportionately expensive. Measure a load from a hot 256-byte
 buffer and it reports 147 ns instead of ~1 ns. The 0.85 µs hardware figure and
 the DSP's ~0.5 µs are measured the same way and are not affected by that.
 
-The benchmark numbers come from a later build of the test module than the
-published images (`d1_hwlock_test` gained a `bench=` option after them); the
-images run the contention test only.
+The published images carry the same test module and firmware as those numbers,
+so `modprobe d1_hwlock_test bench=4 trials=1000000` reproduces them; `bench=0`
+(the default) is the contention test.
 
 ## Versions
 
@@ -60,11 +60,11 @@ images run the contention test only.
 | Linux | 7.3.0-rc7 + 3 hwspinlock patches | `ikruusa/linux` — `d1-hwspinlock-test` |
 | U-Boot | 2026.10-rc4 + DSP remoteproc | `ikruusa/u-boot` — `sun20i-dsp-v1` |
 | OpenSBI | v1.9 | `ikruusa/opensbi` — `sun20i-changes-v5` |
-| FreeRTOS | HiFi4, firmware rev 4 | `ikruusa/FreeRTOS-HIFI4-DSP` — `d1-hwlock-test` |
+| FreeRTOS | HiFi4, firmware rev 6 | `ikruusa/FreeRTOS-HIFI4-DSP` — `d1-hwlock-test` |
 | Buildroot | gcc 16.2.0, binutils 2.46.1 | `ikruusa/buildroot` — `sun20i-dsp-v1` |
-| Image | 126 877 696 B, sha256 `2a64be76…` | — |
+| Image | 126 877 696 B, sha256 `1067ebd2…` | — |
 
-The kernel identifies itself as `Buildroot -g3859f4b814`, the buildroot commit
+The kernel identifies itself as `Buildroot -gbc50c960a3`, the buildroot commit
 above, visible in the log's `Linux version` line.
 
 ## Prebuilt images
@@ -73,8 +73,8 @@ Both images are committed bzip2-compressed (127 MB → 7.98 MB):
 
 | File | Board | Image sha256 | Status |
 |---|---|---|---|
-| `images/sdcard-dock-dsp.img.bz2` | Lichee RV Dock | `2a64be76…` | **tested on hardware** |
-| `images/sdcard-nezha-dsp.img.bz2` | Sipeed Nezha, 1 GB | `1b5001a7…` | built, **never booted** |
+| `images/sdcard-dock-dsp.img.bz2` | Lichee RV Dock | `1067ebd2…` | **tested on hardware** |
+| `images/sdcard-nezha-dsp.img.bz2` | Sipeed Nezha, 1 GB | `f99e0bb2…` | built, **never booted** |
 
 ```
 sha256sum -c SHA256SUMS                            # the archives
@@ -119,12 +119,12 @@ Interrupt the 2-second countdown ("Hit any key to stop autoboot"), then:
 
 ```
 => ext4load mmc 0:1 0x42000000 /root/dsp/dsp.elf
-130292 bytes read in 17 ms (7.3 MiB/s)
+130476 bytes read in 17 ms (7.3 MiB/s)
 => rproc init
 => rproc list
 0 - Name:'dsp0' type:'internal memory mapped' supports: load start stop reset is_running
-=> rproc load 0 0x42000000 0x1fcf4
-Load Remote Processor 0 with data@addr=0x42000000 130292 bytes: Success!
+=> rproc load 0 0x42000000 0x1fdac
+Load Remote Processor 0 with data@addr=0x42000000 130476 bytes: Success!
 => rproc start 0
 ```
 
@@ -134,10 +134,10 @@ The DSP announces itself on the same UART:
  FreeRTOS for HIFI4 DSP v0.1.1, Build on xtensa-hifi4-elf-gcc
 ==========================================================================
 vTaskStartScheduler
-hwlock: fw rev 4, shared @ 0x483ff000, stack top 0x48015f60
+hwlock: fw rev 6, shared @ 0x483ff000, stack top 0x48015f60
 ```
 
-`0x1fcf4` = 130292, the byte count `ext4load` prints. **`rproc load` parses its
+`0x1fdac` = 130476, the byte count `ext4load` prints. **`rproc load` parses its
 size as hex**, so the decimal figure cannot be used directly.
 
 `rproc init` is not strictly required — `rproc load` probes the device on
@@ -152,6 +152,14 @@ more useful error to see first.
 
 The DSP keeps running because the image's kernel command line carries
 `clk_ignore_unused` (see [Caveats](#caveats)).
+
+The root filesystem is mounted by `root=PARTUUID=00c0ffee-01`, not by
+`/dev/mmcblk0p1`: the two MMC hosts on this SoC probe asynchronously and carry
+no `mmc` aliases, so the SD card and the SDIO host swap `mmc0`/`mmc1` between
+boots, and with `rootwait` a wrong guess never times out. The image's MBR disk
+signature is pinned to `0xC0FFEE` in the genimage layout to make that name
+stable. The same applies to anything else that would name the disk — use
+`/dev/disk/by-partuuid/` rather than `mmcblk0`.
 
 ### 3. Run both controls
 
@@ -263,7 +271,7 @@ cost real debugging time.
 - **Do not read `0x00400000` from Linux.** Once the DSP owns its local SRAM,
   that access hangs the bus with no oops. Shared memory has to live in DDR;
   these tests use `0x483ff000`.
-- **`0x1fcf4` is a hex size.** The size also feeds a sanity check against
+- **`0x1fdac` is a hex size.** The size also feeds a sanity check against
   `e_shoff + sizeof(Elf32_Shdr)` (129 132 for this build), so a stale value is
   tolerated only until the firmware grows past it.
 
