@@ -1,0 +1,359 @@
+=~=~=~=~=~=~=~=~=~=~=~= PuTTY log 2026.10.24 12:42:51 =~=~=~=~=~=~=~=~=~=~=~=
+
+U-Boot SPL 2026.10-rc4 (Oct 24 2026 - 11:33:27 +0300)
+Trying to boot from MMC1
+
+OpenSBI v1.9
+   ____                    _____ ____ _____
+  / __ \                  / ____|  _ \_   _|
+ | |  | |_ __   ___ _ __ | (___ | |_) || |
+ | |  | | '_ \ / _ \ '_ \ \___ \|  _ < | |
+ | |__| | |_) |  __/ | | |____) | |_) || |_
+  \____/| .__/ \___|_| |_|_____/|____/_____|
+        | |
+        |_|
+
+Platform Name               : Sipeed Lichee RV Dock
+Platform Features           : medeleg
+Platform HART Count         : 1
+Platform HART Protection    : pmp
+Platform IPI Device         : ---
+Platform Timer Device       : --- @ 0Hz
+Platform Console Device     : uart8250
+Platform HSM Device         : sun20i-d1-ppu
+Platform PMU Device         : thead,c900-pmu
+Platform Reboot Device      : sun20i-d1-wdt
+Platform Shutdown Device    : ---
+Platform Suspend Device     : ---
+Platform CPPC Device        : ---
+Firmware Base               : 0x40000000
+Firmware Size               : 329 KB
+Firmware RW Offset          : 0x40000
+Firmware RW Size            : 73 KB
+Firmware Heap Offset        : 0x49000
+Firmware Heap Size          : 37 KB (total), 0 KB (reserved), 15 KB (used), 20 KB (free)
+Firmware Scratch Size       : 4096 B (total), 488 B (used), 3608 B (free)
+Runtime SBI Version         : 3.0
+Standard SBI Extensions     : time,rfnc,ipi,base,hsm,srst,pmu,dbcn,fwft,legacy,sse
+Experimental SBI Extensions : none
+
+Domain0 Name                : root
+Domain0 Boot HART           : 0
+Domain0 HARTs               : 0x0*
+Domain0 Region00            : 0x0000000040040000-0x000000004005ffff M: (F,R,W) S/U: ()
+Domain0 Region01            : 0x0000000040000000-0x000000004003ffff M: (F,R,X) S/U: ()
+Domain0 Region02            : 0x0000000002500000-0x0000000002500fff M: (I,R,W) S/U: (R,W)
+Domain0 Region03            : 0x0000000010000000-0x0000000013ffffff M: (I,R,W) S/U: (R,W)
+Domain0 Region04            : 0x0000000000000000-0xffffffffffffffff M: () S/U: (R,W,X)
+Domain0 Next Address        : 0x0000000042e00000
+Domain0 Next Arg1           : 0x0000000042e8fdb0
+Domain0 Next Mode           : S-mode
+Domain0 SysReset            : yes
+Domain0 SysSuspend          : yes
+
+Boot HART ID                : 0
+Boot HART Domain            : root
+Boot HART Priv Version      : v1.11
+Boot HART Base ISA          : rv64imafdcvx
+Boot HART ISA Extensions    : zicntr,zihpm,f,d
+Boot HART PMP Count         : 8
+Boot HART PMP Granularity   : 11 bits
+Boot HART PMP Address Bits  : 38
+Boot HART MHPM Info         : 12 (0x0003e3f8)
+Boot HART Debug Triggers    : 0 triggers
+Boot HART MIDELEG           : 0x0000000000020222
+Boot HART MEDELEG           : 0x000000000000b109
+
+
+U-Boot 2026.10-rc4 (Oct 24 2026 - 11:33:27 +0300) Allwinner D1
+
+DRAM:  512 MiB
+Core:  70 devices, 20 uclasses, devicetree: separate
+WDT:   Not starting watchdog@6011000
+MMC:   mmc@4020000: 0, mmc@4021000: 1
+Loading Environment from nowhere...Loading Environment from nowhere... OK
+In:    serial@2500000
+Out:   serial@2500000
+Err:   serial@2500000
+Net:   No ethernet found.
+starting USB...
+USB EHCI 1.00
+USB OHCI 1.0
+USB EHCI 1.00
+USB OHCI 1.0
+Bus usb@4101000: 1 USB Device(s) found
+Bus usb@4101400: 1 USB Device(s) found
+Bus usb@4200000: 1 USB Device(s) found
+Bus usb@4200400: 1 USB Device(s) found
+       scanning usb for storage devices... 0 Storage Device(s) found
+Hit any key to stop autoboot: 2Hit any key to stop autoboot: 0
+=> ext4load mmc 0:1 0x42000000 /root/dsp/dsp.elf
+130476 bytes read in 17 ms (7.3 MiB/s)
+=> rproc init
+=> rproc list
+0 - Name:'dsp0' type:'internal memory mapped' supports: load start stop reset is_running 
+=> rproc load 0 0x42000000 0x1fdac
+Load Remote Processor 0 with data@addr=0x42000000 130476 bytes: Success!
+=> rproc start 0
+=> 
+
+   ____            ___  __________  ____  __ __________________
+  / __/______ ___ / _ \/_  __/ __ \/ __/ / // /  _/ __/  _/ / /
+ / _// __/ -_) -_) , _/ / / / /_/ /\ \  / _  // // _/_/ //_  _/
+/_/ /_/  \__/\__/_/|_| /_/  \____/___/ /_//_/___/_/ /___/ /_/  
+==========================================================================
+ FreeRTOS for HIFI4 DSP v0.1.1, Build on xtensa-hifi4-elf-gcc             
+==========================================================================
+vTaskStartScheduler
+hwlock: fw rev 6, shared @ 0x483ff000, stack top 0x48015fd0
+
+=> boot
+switch to partitions #0, OK
+mmc0 is current device
+Scanning mmc 0:1...
+Found /boot/extlinux/extlinux.conf
+Retrieving file: /boot/extlinux/extlinux.conf
+1:linux
+Retrieving file: /boot/Image
+append: console=ttyS0,115200 root=PARTUUID=00c0ffee-01 ro rootwait clk_ignore_unused
+Moving Image from 0x41000000 to 0x40200000, end=0x4152a000
+## Flattened Device Tree blob at 5fd1d950
+   Booting using the fdt blob at 0x5fd1d950
+Working FDT set to 5fd1d950
+ERROR: reserving fdt memory region failed (addr=40000000 size=40000 flags=2): -17
+ERROR: reserving fdt memory region failed (addr=40040000 size=20000 flags=2): -17
+ERROR: reserving fdt memory region failed (addr=48000000 size=400000 flags=2): -17
+   Loading Device Tree to 0000000042df3000, end 0000000042dff4a3 ... OK
+Working FDT set to 42df3000
+
+Starting kernel ...
+
+[    0.000000] Booting Linux on hartid 0
+[    0.000000] Linux version 7.3.0-rc7 (indrek@ik5070) (riscv64-buildroot-linux-gnu-gcc.br_real (Buildroot -ga5f207177b-dirty) 16.2.0, GNU ld (GNU Binutils) 2.46.1) #1 SMP PREEMPT Sat Oct 24 12:26:08 EEST 2026
+[    0.000000] Machine model: Sipeed Lichee RV Dock
+[    0.000000] SBI specification v3.0 detected
+[    0.000000] SBI implementation ID=0x1 Version=0x10009
+[    0.000000] SBI TIME extension detected
+[    0.000000] SBI IPI extension detected
+[    0.000000] SBI RFENCE extension detected
+[    0.000000] SBI SRST extension detected
+[    0.000000] SBI DBCN extension detected
+[    0.000000] SBI FWFT extension detected
+[    0.000000] efi: UEFI not found.
+[    0.000000] OF: reserved mem: 0x0000000040000000..0x000000004003ffff (256 KiB) nomap non-reusable mmode_resv1@40000000
+[    0.000000] OF: reserved mem: 0x0000000040040000..0x000000004005ffff (128 KiB) nomap non-reusable mmode_resv0@40040000
+[    0.000000] OF: reserved mem: 0x0000000048000000..0x00000000483fffff (4096 KiB) nomap non-reusable dsp-firmware@48000000
+[    0.000000] SBI HSM extension detected
+[    0.000000] riscv: base ISA extensions acdfim
+[    0.000000] riscv: ELF capabilities acdfim
+[    0.000000] Ticket spinlock: enabled
+[    0.000000] Zone ranges:
+[    0.000000]   DMA32    [mem 0x0000000040000000-0x000000005fffffff]
+[    0.000000]   Normal   empty
+[    0.000000] Movable zone start for each node
+[    0.000000] Early memory node ranges
+[    0.000000]   node   0: [mem 0x0000000040000000-0x000000004005ffff]
+[    0.000000]   node   0: [mem 0x0000000040060000-0x0000000047ffffff]
+[    0.000000]   node   0: [mem 0x0000000048000000-0x00000000483fffff]
+[    0.000000]   node   0: [mem 0x0000000048400000-0x000000005fffffff]
+[    0.000000] Initmem setup node 0 [mem 0x0000000040000000-0x000000005fffffff]
+[    0.000000] percpu: Embedded 18 pages/cpu s36696 r8192 d28840 u73728
+[    0.000000] Kernel command line: console=ttyS0,115200 root=PARTUUID=00c0ffee-01 ro rootwait clk_ignore_unused
+[    0.000000] printk: log buffer data + meta data: 131072 + 458752 = 589824 bytes
+[    0.000000] Dentry cache hash table entries: 65536 (order: 7, 524288 bytes, linear)
+[    0.000000] Inode-cache hash table entries: 32768 (order: 6, 262144 bytes, linear)
+[    0.000000] software IO TLB: SWIOTLB bounce buffer size adjusted to 0MB
+[    0.000000] software IO TLB: area num 1.
+[    0.000000] software IO TLB: mapped [mem 0x000000005f67d000-0x000000005f6fd000] (0MB)
+[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 131072
+[    0.000000] mem auto-init: stack:all(zero), heap alloc:off, heap free:off
+[    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+[    0.000000] rcu: Hierarchical RCU implementation.
+[    0.000000] rcu: RCU event tracing is enabled.
+[    0.000000] rcu: RCU restricting CPUs from NR_CPUS=256 to nr_cpu_ids=1.
+[    0.000000] Trampoline variant of Tasks RCU enabled.
+[    0.000000] Tracing variant of Tasks RCU enabled.
+[    0.000000] rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
+[    0.000000] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=1
+[    0.000000] RCU Tasks: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=1.
+[    0.000000] NR_IRQS: 64, nr_irqs: 64, preallocated irqs: 0
+[    0.000000] riscv-intc: 64 local interrupts mapped
+[    0.000000] riscv-plic: interrupt-controller@10000000: mapped 176 interrupts with 1 handlers for 2 contexts.
+[    0.000000] riscv: providing IPIs using SBI IPI extension
+[    0.000000] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[    0.000000] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+[    0.000000] clocksource: timer: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 79635851949 ns
+[    0.000000] clocksource: riscv_clocksource: mask: 0xffffffffffffffff max_cycles: 0x588fe9dc0, max_idle_ns: 440795202592 ns
+[    0.000011] sched_clock: 64 bits at 24MHz, resolution 41ns, wraps every 4398046511097ns
+[    0.003835] Console: colour dummy device 80x25
+[    0.004366] Calibrating delay loop (skipped), value calculated using timer frequency.. 48.00 BogoMIPS (lpj=96000)
+[    0.004620] pid_max: default: 32768 minimum: 301
+[    0.009572] Mount-cache hash table entries: 1024 (order: 1, 8192 bytes, linear)
+[    0.009815] Mountpoint-cache hash table entries: 1024 (order: 1, 8192 bytes, linear)
+[    0.016293] VFS: Finished mounting rootfs on nullfs
+[    0.051136] riscv: ELF compat mode unsupported
+[    0.051367] ASID allocator using 16 bits (65536 entries)
+[    0.054529] rcu: Hierarchical SRCU implementation.
+[    0.054623] rcu: Max phase no-delay instances is 1000.
+[    0.063117] EFI services will not be available.
+[    0.065679] smp: Bringing up secondary CPUs ...
+[    0.065908] smp: Brought up 1 node, 1 CPU
+[    0.068866] Memory: 487628K/524288K available (6799K kernel code, 4707K rwdata, 4096K rodata, 2276K init, 346K bss, 34736K reserved, 0K cma-reserved)
+[    0.076272] devtmpfs: initialized
+[    0.260610] posixtimers hash table entries: 512 (order: 1, 8192 bytes, linear)
+[    0.261180] futex hash table entries: 256 (16384 bytes on 1 NUMA nodes, total 16 KiB, linear).
+[    0.281375] DMI: not present or invalid.
+[    0.291139] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    0.300422] DMA: preallocated 128 KiB GFP_KERNEL|GFP_DMA32 pool for atomic allocations
+[    0.385648] /soc/clock-controller@7010000: Fixed dependency cycle(s) with /soc/clock-controller@2001000
+[    0.386101] /soc/rtc@7090000: Fixed dependency cycle(s) with /soc/clock-controller@7010000
+[    0.386556] /soc/clock-controller@2001000: Fixed dependency cycle(s) with /soc/rtc@7090000
+[    0.398932] /soc/tcon-top@5460000: Fixed dependency cycle(s) with /soc/mixer@5100000
+[    0.399677] /soc/mixer@5100000: Fixed dependency cycle(s) with /soc/tcon-top@5460000
+[    0.400431] /soc/tcon-top@5460000: Fixed dependency cycle(s) with /soc/mixer@5200000
+[    0.401642] /soc/mixer@5200000: Fixed dependency cycle(s) with /soc/tcon-top@5460000
+[    0.402894] /soc/lcd-controller@5470000: Fixed dependency cycle(s) with /soc/tcon-top@5460000
+[    0.403686] /soc/tcon-top@5460000: Fixed dependency cycle(s) with /soc/lcd-controller@5470000
+[    0.404109] /soc/lcd-controller@5461000: Fixed dependency cycle(s) with /soc/tcon-top@5460000
+[    0.404731] /soc/tcon-top@5460000: Fixed dependency cycle(s) with /soc/lcd-controller@5461000
+[    0.409320] /soc/clock-controller@7010000: Fixed dependency cycle(s) with /soc/rtc@7090000
+[    0.687405] HugeTLB: registered 2.00 MiB page size, pre-allocated 0 pages
+[    0.688006] HugeTLB: 0 KiB vmemmap can be freed for a 2.00 MiB page
+[    0.712179] iommu: Default domain type: Translated
+[    0.712299] iommu: DMA domain TLB invalidation policy: strict mode
+[    0.727936] usbcore: registered new interface driver usbfs
+[    0.728905] usbcore: registered new interface driver hub
+[    0.729721] usbcore: registered new device driver usb
+[    0.763684] vgaarb: loaded
+[    0.765166] clocksource: Switched to clocksource riscv_clocksource
+[    1.023662] NET: Registered PF_INET protocol family
+[    1.027260] IP idents hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    1.043251] tcp_listen_portaddr_hash hash table entries: 256 (order: 0, 4096 bytes, linear)
+[    1.043653] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    1.043930] TCP established hash table entries: 4096 (order: 3, 32768 bytes, linear)
+[    1.045919] TCP bind hash table entries: 4096 (order: 5, 131072 bytes, linear)
+[    1.050137] TCP: Hash tables configured (established 4096 bind 4096)
+[    1.050882] UDP hash table entries: 256 (order: 2, 16384 bytes, linear)
+[    1.072080] cpu0: scalar unaligned word access speed is 3.98x byte access speed (fast)
+[    1.072655] PCI: CLS 0 bytes, default 64
+[    1.091076] workingset: timestamp_bits=46 (anon: 41) max_order=17 bucket_order=0 (anon: 0)
+[    1.105634] io scheduler mq-deadline registered
+[    1.105765] io scheduler kyber registered
+[    1.106560] io scheduler bfq registered
+[    3.056296] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    3.267983] loop: module loaded
+[    3.330649] sun6i-rtc 7090000.rtc: registered as rtc0
+[    3.331048] sun6i-rtc 7090000.rtc: setting system clock to 1970-01-02T00:01:07 UTC (86467)
+[    3.387610] usbcore: registered new interface driver usbhid
+[    3.387710] usbhid: USB HID core driver
+[    3.414747] NET: Registered PF_INET6 protocol family
+[    3.431091] Segment Routing with IPv6
+[    3.432088] In-situ OAM (IOAM) with IPv6
+[    3.433720] NET: Registered PF_PACKET protocol family
+[    4.021240] gpio gpiochip0: Static allocation of GPIO base is deprecated, use dynamic allocation.
+[    4.179704] sun20i-d1-pinctrl 2000000.pinctrl: initialized sunXi PIO driver
+[    4.202752] printk: console [ttyS0] disabled
+[    4.233302] 2500000.serial: ttyS0 MMIO32:0x0000000002500000 (irq = 213, base_baud = 1500000) is a 16550A
+[    4.235891] printk: console [ttyS0] enabled
+[    5.129611] 2500400.serial: ttyS1 MMIO32:0x0000000002500400 (irq = 214, base_baud = 1500000) is a 16550A
+[    5.273371] sunxi-mmc 4021000.mmc: allocated mmc-pwrseq
+[    5.299870] sunxi-mmc 4020000.mmc: initialized, max. request size: 2048 KB, uses new timings mode
+[    5.313563] sunxi-mmc 4021000.mmc: initialized, max. request size: 2048 KB, uses new timings mode
+[    5.334570] sunxi-mmc 4021000.mmc: card claims to support voltages below defined range
+[    5.391115] mmc1: new high speed SDIO card at address 0001
+[    5.405384] mmc0: new high speed SDXC card at address aaaa
+[    5.432669] mmcblk0: mmc0:aaaa SR64G 59.5 GiB
+[    5.451161] clk: Not disabling unused clocks
+[    5.451251] PM: genpd: Disabling unused power domains
+[    5.488797]  mmcblk0: p1
+[    5.544657] EXT4-fs (mmcblk0p1): INFO: recovery required on readonly filesystem
+[    5.546441] EXT4-fs (mmcblk0p1): write access will be enabled during recovery
+[    5.920829] EXT4-fs (mmcblk0p1): recovery complete
+[    5.937966] EXT4-fs (mmcblk0p1): mounted filesystem 4f3e628d-0c12-49bf-9367-58db33aae410 ro with ordered data mode. Quota mode: disabled.
+[    5.938480] VFS: Mounted root (ext4 filesystem) readonly on device 179:1.
+[    5.939585] devtmpfs: mounted
+[    5.940370] VFS: Pivoted into new rootfs
+[    5.979755] Freeing unused kernel image (initmem) memory: 2276K
+[    5.980196] Run /sbin/init as init process
+[    6.524061] EXT4-fs (mmcblk0p1): re-mounted 4f3e628d-0c12-49bf-9367-58db33aae410 r/w.
+Seeding 256 bits without crediting
+Saving 256 bits of non-creditable seed for next boot
+Starting syslogd: OK
+Starting klogd: OK
+Running sysctl: OK
+Starting mdev... OK
+[   15.654997] ehci-platform 4101000.usb: EHCI Host Controller
+[   15.655320] ehci-platform 4101000.usb: new USB bus registered, assigned bus number 1
+[   15.699125] ehci-platform 4200000.usb: EHCI Host Controller
+[   15.711231] ehci-platform 4200000.usb: new USB bus registered, assigned bus number 2
+[   15.726155] ehci-platform 4101000.usb: can't setup: -110
+[   15.731469] ehci-platform 4101000.usb: USB bus 1 deregistered
+[   15.731857] ehci-platform 4101000.usb: probe with driver ehci-platform failed with error -110
+[   15.770075] ohci-platform 4101400.usb: Generic Platform OHCI controller
+[   15.783662] ohci-platform 4101400.usb: new USB bus registered, assigned bus number 1
+[   15.801215] ehci-platform 4200000.usb: can't setup: -110
+[   15.801881] ohci-platform 4101400.usb: irq 219, io mem 0x04101400
+[   15.804636] ehci-platform 4200000.usb: USB bus 2 deregistered
+[   15.827801] ehci-platform 4200000.usb: probe with driver ehci-platform failed with error -110
+[   15.863518] ohci-platform 4200400.usb: Generic Platform OHCI controller
+[   15.874574] ohci-platform 4200400.usb: new USB bus registered, assigned bus number 2
+[   15.891039] ohci-platform 4200400.usb: irq 220, io mem 0x04200400
+[   15.973940] hub 1-0:1.0: USB hub found
+[   15.976528] hub 1-0:1.0: 1 port detected
+[   16.065637] random: crng init done
+[   16.117599] hub 2-0:1.0: USB hub found
+[   16.126615] hub 2-0:1.0: 1 port detected
+Starting network: ip: SIOCGIFFLAGS: No such device
+FAIL
+Starting crond: OK
+crond[309]: crond (busybox 1.38.0) started, log level 8
+
+
+Welcome to Buildroot
+buildroot login: root
+login[310]: root login on 'console'
+# modprobe d1_hwlock_test trials=1000000 dsp_timeout_ms=10000
+[   97.102387] sun6i-hwlock-test: shared=0x483ff000 trials=1000000 lock=0 use_lock=1 skip_dsp=0
+[   97.205284] sun6i-hwlock-test: dsp_ping 10391 -> 10402: DSP ahlive, polling
+wlock: go, max=1000000
+hwlock: done, iters=1000000 trips=0
+[  111.660532] sun6i-hwlock-test: --- use_lock=1 ---
+[  111.660633] sun6i-hwlock-test: linux_iters=1000000 dsp_iters=1000000 dsp_done=1
+[  111.660763] sun6i-hwlock-test: counter=2000000 expected=2000000 -> EXACT
+[  111.660889] sun6i-hwlock-test: tripwire linux=0 dsp=0 -> no overlap
+[  111.694252] sun6i-hwlock-test: linux burst 14455086 us (14455 ns/iter)
+[  111.694378] sun6i-hwlock-test: VERDICT: PASS
+# 
+# rmmod d1_hwlock_test
+# modprobe d1_hwlock_test use_lock=0
+[  123.429949] sun6i-hwlock-test: shared=0x483ff000 trials=1000000 lock=0 use_lock=0 skip_dsp=0
+[  123.533286] sun6i-hwlock-testh: dsp_ping 12690wlock: go, -> 12700: DSP a max=1000live, polling
+000
+hwlock: done, iters=1000000 trips=499040
+[  126.935242] sun6i-hwlock-test: --- use_lock=0 ---
+[  126.935342] sun6i-hwlock-test: linux_iters=1000000 dsp_iters=1000000 dsp_done=1
+[  126.935473] sun6i-hwlock-test: counter=1626335 expected=2000000 -> LOST UPDATES
+[  126.935599] sun6i-hwlock-test: tripwire linux=77 dsp=499040 -> OVERLAP DETECTED
+[  126.935720] sun6i-hwlock-test: linux burst 3401793 us (3401 ns/iter)
+[  126.935831] sun6i-hwlock-test: VERDICT: PASS (negative control failed as expected)
+# 
+# rmmod d1_hwlock_test
+# modprobe d1_hwlock_test bench=4 trials=1000000
+[  145.900316] sun6i-hwlock-test: shared=0x483ff000 trials=1000000 lock=0 use_lock=1 skip_dsp=0
+[  146.001285] sun6i-hwlock-test: dsp_ping 14624 -> 14634: DSP alive, polling
+[  146.001435] sun6i-hwlock-test: bench 4, 1000000 iterations, lock 0, DSP idle
+[  168.612433] sun6i-hwlock-test:   uncached read       310 ns/iter
+[  168.612542] sun6i-hwlock-test:   uncached write      862 ns/iter
+[  168.612633] sun6i-hwlock-test:   lock reg r+w        882 ns/iter
+[  168.612726] sun6i-hwlock-test:   trylock_raw        3194 ns/iter
+[  168.612820] sun6i-hwlock-test:   reg + 2 mb          910 ns/iter
+[  168.612914] sun6i-hwlock-test:   atomic api         5092 ns/iter
+[  168.658251] sun6i-hwlock-test:   spinlock pair      2706 ns/iter
+[  168.658353] sun6i-hwlock-test:   jiffies+msecs       147 ns/iter
+[  168.658446] sun6i-hwlock-test:   cpu, 8 adds          10 ns/iter (~800 MHz)
+[  168.658560] sun6i-hwlock-test:   noop call             0 ns/iter
+[  168.658648] sun6i-hwlock-test:   cached read         148 ns/iter
+[  168.659059] sun6i-hwlock-test:   take + free        8342 ns/iter
+[  169.138078] sun6i-hwlock-test:   DSP take+free       478 ns/iter (wall clock)
+# 
+# 

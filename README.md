@@ -27,6 +27,11 @@ The loss rate **varies between runs** (5.3 %, 5.7 %, 17.3 % and 18.7 % have been
 observed). Treat the percentage as one sample; the qualitative result is what
 reproduces.
 
+The run shipped with the current images (2026-10-24, `logs/2026-10-24-lichee-rv-dock.log`)
+gave the same verdicts with different samples: 2 000 000 exact, 14 455 ns per
+locked iteration; without the lock 1 626 335 of 2 000 000, i.e. 18.7 % lost, with
+overlaps on both sides (77 Linux, 499 040 DSP).
+
 The lock is not free, but most of what it costs is not the lock. Measured
 separately on the C906 with the DSP idle (1 M iterations each):
 
@@ -64,8 +69,10 @@ so `modprobe d1_hwlock_test bench=4 trials=1000000` reproduces them; `bench=0`
 | Buildroot | gcc 16.2.0, binutils 2.46.1 | `ikruusa/buildroot` — `sun20i-dsp-v1` |
 | Image | 126 877 696 B, sha256 `1067ebd2…` | — |
 
-The kernel identifies itself as `Buildroot -gbc50c960a3`, the buildroot commit
-above, visible in the log's `Linux version` line.
+The `Buildroot -ga5f207177b-dirty` in the log's `Linux version` line is the
+**toolchain's** build id, not this image's commit: gcc and binutils were built at
+that point in the buildroot tree, and the `-dirty` suffix means uncommitted
+defconfigs at the time. The image itself comes from the branch and commit above.
 
 ## Prebuilt images
 
