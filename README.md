@@ -62,11 +62,11 @@ so `modprobe d1_hwlock_test bench=4 trials=1000000` reproduces them; `bench=0`
 | Component | Version | Branch |
 |---|---|---|
 | Board | Sipeed Lichee RV Dock (Allwinner D1-H, 512 MiB) | — |
-| Linux | 7.3.0-rc7 + 3 hwspinlock patches | `ikruusa/linux` — `d1-hwspinlock-test` |
-| U-Boot | 2026.10-rc4 + DSP remoteproc | `ikruusa/u-boot` — `sun20i-dsp-v1` |
-| OpenSBI | v1.9 | `ikruusa/opensbi` — `sun20i-changes-v5` |
-| FreeRTOS | HiFi4, firmware rev 6 | `ikruusa/FreeRTOS-HIFI4-DSP` — `d1-hwlock-test` |
-| Buildroot | gcc 16.2.0, binutils 2.46.1 | `ikruusa/buildroot` — `sun20i-dsp-v1` |
+| Linux | 7.3.0-rc7 + 3 hwspinlock patches | [`ikruusa/linux` — `d1-hwspinlock-test`](https://github.com/ikruusa/linux/tree/d1-hwspinlock-test) |
+| U-Boot | 2026.10-rc4 + DSP remoteproc | [`ikruusa/u-boot` — `sun20i-dsp-v1`](https://github.com/ikruusa/u-boot/tree/sun20i-dsp-v1) |
+| OpenSBI | v1.9 | [`ikruusa/opensbi` — `sun20i-changes-v5`](https://github.com/ikruusa/opensbi/tree/sun20i-changes-v5) |
+| FreeRTOS | HiFi4, firmware rev 6 | [`ikruusa/FreeRTOS-HIFI4-DSP` — `d1-hwlock-test`](https://github.com/ikruusa/FreeRTOS-HIFI4-DSP/tree/d1-hwlock-test) |
+| Buildroot | gcc 16.2.0, binutils 2.46.1 | [`ikruusa/buildroot` — `sun20i-dsp-v1`](https://github.com/ikruusa/buildroot/tree/sun20i-dsp-v1) |
 | Image | 126 877 696 B, sha256 `1067ebd2…` | — |
 
 The `Buildroot -ga5f207177b-dirty` in the log's `Linux version` line is the
