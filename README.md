@@ -234,6 +234,7 @@ cost real debugging time.
 | [`16c9b5f1f8c7f`](https://github.com/ikruusa/linux/commit/16c9b5f1f8c7f) | dt-bindings: compatible for Allwinner D1 |
 | [`db9ddbe1dffa4`](https://github.com/ikruusa/linux/commit/db9ddbe1dffa4) | DT node in `sunxi-d1-t113.dtsi` |
 | [`423559a420391`](https://github.com/ikruusa/linux/commit/423559a420391) | the contention test module (scaffolding) |
+| [`974dfb27cd3fa`](https://github.com/ikruusa/linux/commit/974dfb27cd3fa) | the `bench=` mode, which splits the lock cost into register, API and caller |
 
 ### U-Boot — the DSP loader
 
@@ -253,14 +254,20 @@ cost real debugging time.
 
 ### FreeRTOS
 
-[`13fb0ff`](https://github.com/ikruusa/FreeRTOS-HIFI4-DSP/commit/13fb0ff) — the DSP side of the contention test.
+[`13fb0ff`](https://github.com/ikruusa/FreeRTOS-HIFI4-DSP/commit/13fb0ff) — the DSP side of the contention test ·
+[`209a52b`](https://github.com/ikruusa/FreeRTOS-HIFI4-DSP/commit/209a52b) firmware rev 6 — the DSP side of the benchmark, and no printing while it runs
 
 ### Buildroot
 
 [`7ec69192c7`](https://github.com/ikruusa/buildroot/commit/7ec69192c7) image target ·
 [`a5f207177b`](https://github.com/ikruusa/buildroot/commit/a5f207177b) branch-level pins ·
 [`eba47cc7f4`](https://github.com/ikruusa/buildroot/commit/eba47cc7f4) Nezha image ·
-[`3859f4b814`](https://github.com/ikruusa/buildroot/commit/3859f4b814) reuse the existing Nezha board files
+[`3859f4b814`](https://github.com/ikruusa/buildroot/commit/3859f4b814) reuse the existing Nezha board files ·
+[`c89db355d6`](https://github.com/ikruusa/buildroot/commit/c89db355d6) mount the rootfs by PARTUUID, first with per-target layouts ·
+[`d06f0450bc`](https://github.com/ikruusa/buildroot/commit/d06f0450bc) pin the MBR disk signature in the shared layouts instead ·
+[`2da929cf00`](https://github.com/ikruusa/buildroot/commit/2da929cf00) drop the per-target copies again ·
+[`5523d3a00d`](https://github.com/ikruusa/buildroot/commit/5523d3a00d) firmware rev 6 and the `bench=` documentation ·
+[`bc50c960a3`](https://github.com/ikruusa/buildroot/commit/bc50c960a3) repair the Nezha layout, whose `u-boot` partition the signature change had eaten
 
 ## Caveats
 
