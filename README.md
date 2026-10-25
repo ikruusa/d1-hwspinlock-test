@@ -27,34 +27,65 @@ The loss rate **varies between runs** (5.3 %, 5.7 %, 17.3 % and 18.7 % have been
 observed). Treat the percentage as one sample; the qualitative result is what
 reproduces.
 
-The run shipped with the current images (2026-10-24, `logs/2026-10-24-lichee-rv-dock.log`)
+The run shipped with the previous images (2026-10-24, `logs/2026-10-24-lichee-rv-dock.log`)
 gave the same verdicts with different samples: 2 000 000 exact, 14 455 ns per
 locked iteration; without the lock 1 626 335 of 2 000 000, i.e. 18.7 % lost, with
 overlaps on both sides (77 Linux, 499 040 DSP).
 
+⚠️ **Both contention runs above were made with the cacheless bootloader** (see
+[The C906 caches](#the-c906-caches)). The images in this repository now enable
+the caches, so the per-iteration figures here no longer describe them; only the
+verdicts are expected to carry over. A matched re-run on the current images is
+pending and will land as a new file under `logs/`.
+
 The lock is not free, but most of what it costs is not the lock. Measured
-separately on the C906 with the DSP idle (1 M iterations each):
+separately on the C906, 1 M iterations each, with the DSP polling:
 
-| Step | ns per take/free |
-|---|---|
-| bare register access: `readl()` to take, `writel()` to release | **850** |
-| the same plus the two `mb()` the hwspinlock core issues | 870 |
-| through `hwspin_lock_timeout()` + `hwspin_unlock()` | 8 200 – 8 600 |
-| the same pair on the DSP, bare metal (wall clock) | ~500 |
+| Step | caches off | caches on | change |
+|---|---|---|---|
+| bare register access: `readl()` to take, `writel()` to release | 882 ns | **125 ns** | 7× |
+| the same plus the two `mb()` the hwspinlock core issues | 910 ns | **130 ns** | 7× |
+| through `hwspin_lock_timeout()` + `hwspin_unlock()` | 8 342 ns | **481 ns** | 17× |
+| the same pair on the DSP, bare metal (wall clock) | 478 ns | **503 ns** | — |
 
-The hardware path is 0.85 µs and the memory barriers are effectively free
-(21 ns for both); the remaining ~7.7 µs is the Linux side — the call into the
-hwspinlock core, the timeout bookkeeping and the core's own spinlock.
+The hardware path is 0.13 µs and the memory barriers are essentially free; the
+remaining ~0.35 µs is the Linux side — the call into the hwspinlock core, the
+timeout bookkeeping and the core's own spinlock.
 
-⚠️ **Read the Linux figure with care.** This board's bootloader never enables the
-C906 caches — `MHCR.IE` and `MHCR.DE` both reset to 0 and nothing in the boot
-chain sets them — so every normal-memory access costs ~150 ns here and function
-calls are disproportionately expensive. Measure a load from a hot 256-byte
-buffer and it reports 147 ns instead of ~1 ns. The 0.85 µs hardware figure and
-the DSP's ~0.5 µs are measured the same way and are not affected by that.
+The DSP figure is the interesting one: it does **not** improve. A cross-core
+handshake is bound by the DSP's turnaround and the bus round-trip, not by how
+fast the C906 can read its own memory.
 
-The published images carry the same test module and firmware as those numbers,
-so `modprobe d1_hwlock_test bench=4 trials=1000000` reproduces them; `bench=0`
+### The C906 caches
+
+The earlier images left both C906 caches disabled — `MHCR.IE` and `MHCR.DE`
+reset to 0 and nothing in the boot chain (BROM, SPL, OpenSBI) set them, so every
+normal-memory access cost ~150 ns and function calls were disproportionately
+expensive. The images here enable both caches in the SPL, once DRAM is up.
+
+That alone broke the SD card. `sunxi-mmc` fills its IDMAC descriptor chain with
+plain stores into `dma_alloc_coherent()` memory and relies on that memory being
+coherent, but on a RISC-V host without Svpbmt there is no uncached alias for it,
+so the chain stays cacheable write-back memory. The IDMAC read stale
+descriptors, transferred nothing and raised no interrupt at all, and the first
+data transfer of an SD probe (ACMD51) waited forever. `d1-cache-v1` adds the
+missing write-back of the descriptor page.
+
+Effect on the Lichee RV Dock, `bench=4`, 1 M iterations, DSP polling in both
+runs:
+
+| Probe | caches off | caches on |
+|---|---|---|
+| load from a hot 256-byte buffer | 148 ns | **6 ns** |
+| register loop with no memory access at all | 147 ns | **6 ns** |
+| `spin_lock_irqsave`/`spin_unlock_irqrestore` pair | 2 706 ns | **160 ns** |
+| single `readl()` of an MMIO register | 310 ns | **31 ns** |
+| boot to `Freeing unused kernel image` | 5.98 s | **1.68 s** |
+
+The last two rows also expose the DSP's cost: the same `readl()` costs 14 ns with
+the DSP idle and 31 ns with it polling, i.e. ~17 ns per MMIO access.
+
+`modprobe d1_hwlock_test bench=4 trials=1000000` reproduces the table; `bench=0`
 (the default) is the contention test.
 
 ## Versions
@@ -62,12 +93,12 @@ so `modprobe d1_hwlock_test bench=4 trials=1000000` reproduces them; `bench=0`
 | Component | Version | Branch |
 |---|---|---|
 | Board | Sipeed Lichee RV Dock (Allwinner D1-H, 512 MiB) | — |
-| Linux | 7.3.0-rc7 + 3 hwspinlock patches | [`ikruusa/linux` — `d1-hwspinlock-test`](https://github.com/ikruusa/linux/tree/d1-hwspinlock-test) |
-| U-Boot | 2026.10-rc4 + DSP remoteproc | [`ikruusa/u-boot` — `sun20i-dsp-v1`](https://github.com/ikruusa/u-boot/tree/sun20i-dsp-v1) |
+| Linux | 7.3.0-rc7 + 3 hwspinlock patches + the MMC fix | [`ikruusa/linux` — `d1-cache-v1`](https://github.com/ikruusa/linux/tree/d1-cache-v1) |
+| U-Boot | 2026.10-rc4 + DSP remoteproc + C906 caches | [`ikruusa/u-boot` — `sun20i-dsp-cache-v1`](https://github.com/ikruusa/u-boot/tree/sun20i-dsp-cache-v1) |
 | OpenSBI | v1.9 | [`ikruusa/opensbi` — `sun20i-changes-v5`](https://github.com/ikruusa/opensbi/tree/sun20i-changes-v5) |
 | FreeRTOS | HiFi4, firmware rev 6 | [`ikruusa/FreeRTOS-HIFI4-DSP` — `d1-hwlock-test`](https://github.com/ikruusa/FreeRTOS-HIFI4-DSP/tree/d1-hwlock-test) |
 | Buildroot | gcc 16.2.0, binutils 2.46.1 | [`ikruusa/buildroot` — `sun20i-dsp-v1`](https://github.com/ikruusa/buildroot/tree/sun20i-dsp-v1) |
-| Image | 126 877 696 B, sha256 `1067ebd2…` | — |
+| Image | 126 877 696 B, sha256 `793e38b0…` | — |
 
 The `Buildroot -ga5f207177b-dirty` in the log's `Linux version` line is the
 **toolchain's** build id, not this image's commit: gcc and binutils were built at
@@ -80,8 +111,8 @@ Both images are committed bzip2-compressed (127 MB → 7.98 MB):
 
 | File | Board | Image sha256 | Status |
 |---|---|---|---|
-| `images/sdcard-dock-dsp.img.bz2` | Lichee RV Dock | `1067ebd2…` | **tested on hardware** |
-| `images/sdcard-nezha-dsp.img.bz2` | Sipeed Nezha, 1 GB | `f99e0bb2…` | built, **never booted** |
+| `images/sdcard-dock-dsp.img.bz2` | Lichee RV Dock | `793e38b0…` | built, **awaiting boot test** |
+| `images/sdcard-nezha-dsp.img.bz2` | Sipeed Nezha, 1 GB | `61db9a9e…` | built, **never booted** |
 
 ```
 sha256sum -c SHA256SUMS                            # the archives
@@ -230,6 +261,7 @@ cost real debugging time.
 
 | Commit | Note |
 |---|---|
+| [`b797617db94fd`](https://github.com/ikruusa/linux/commit/b797617db94fd) | sunxi-mmc: write back the IDMAC descriptors — without it the SD card is dead once the D-cache is on |
 | [`8bf0796a5c521`](https://github.com/ikruusa/linux/commit/8bf0796a5c521) | driver: get the clock and reset without names |
 | [`16c9b5f1f8c7f`](https://github.com/ikruusa/linux/commit/16c9b5f1f8c7f) | dt-bindings: compatible for Allwinner D1 |
 | [`db9ddbe1dffa4`](https://github.com/ikruusa/linux/commit/db9ddbe1dffa4) | DT node in `sunxi-d1-t113.dtsi` |
@@ -240,6 +272,7 @@ cost real debugging time.
 
 | Commit | Note |
 |---|---|
+| [`bfbb7d52869`](https://github.com/ikruusa/u-boot/commit/bfbb7d52869) | enable the C906 caches in the SPL, after DRAM init; flushes the loaded image before handoff |
 | [`f7c08ccac2f`](https://github.com/ikruusa/u-boot/commit/f7c08ccac2f) | RISC-V `memset_io()`, needed by the ELF loader |
 | [`3ea72b0c2c1`](https://github.com/ikruusa/u-boot/commit/3ea72b0c2c1) | the HiFi4 remoteproc driver |
 | [`ed2f0deedc6`](https://github.com/ikruusa/u-boot/commit/ed2f0deedc6) | **program the boot vector before releasing reset** — `DSP_CFG_RST` resets the CFG block, so writes made earlier are silently lost |
@@ -259,6 +292,7 @@ cost real debugging time.
 
 ### Buildroot
 
+[`babb594308`](https://github.com/ikruusa/buildroot/commit/babb594308) build from the cache-enabled branches ·
 [`7ec69192c7`](https://github.com/ikruusa/buildroot/commit/7ec69192c7) image target ·
 [`a5f207177b`](https://github.com/ikruusa/buildroot/commit/a5f207177b) branch-level pins ·
 [`eba47cc7f4`](https://github.com/ikruusa/buildroot/commit/eba47cc7f4) Nezha image ·
