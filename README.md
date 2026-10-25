@@ -8,31 +8,32 @@ Tensilica **HiFi4** running FreeRTOS as the second bus master.
 
 | | with lock | without lock |
 |---|---|---|
-| counter | **2 000 000** (exact) | 1 885 761 of 2 000 000 |
-| lost updates | 0 | 114 239 (**5.7 %**) |
-| tripwire / overlap | 0 / 0 | 100 302 Linux, 674 915 DSP |
-| Linux iteration | 14 692 ns | 3 278 ns |
+| counter | **1 578 561** (exact) | 1 022 892 of 1 244 737 |
+| lost updates | 0 | 221 845 (**17.8 %**) |
+| tripwire / overlap | 0 / 0 | 110 488 Linux, 14 DSP |
+| Linux iteration | 2 631 ns | 746 ns |
 | verdict | **PASS** | **PASS** (control failed as expected) |
 
-Both masters incremented the same shared counter 1 000 000 times under lock 0.
-With the lock the total is exact and the tripwire — set while inside the
-critical section and read by the other side — never fires. Without it, updates
-are lost and overlap is observed on both sides.
+Linux runs a fixed 1 000 000 iterations and the DSP runs until Linux signals
+stop, so how many it completes depends on how quickly Linux gets there: 578 561
+in the locked run, 244 737 in the control, where it does not have to wait for a
+lock it never takes. The check is therefore `counter == linux_iters + dsp_iters`,
+not a fixed total.
 
-The loss rate **varies between runs** (5.3 %, 5.7 %, 17.3 % and 18.7 % have been
-observed). Treat the percentage as one sample; the qualitative result is what
-reproduces.
+With the lock the sum is exact and the tripwire — set while inside the critical
+section and read by the other side — never fires. Without it, updates are lost
+and overlap is observed on both sides.
 
-The run shipped with the previous images (2026-10-24, `logs/2026-10-24-lichee-rv-dock.log`)
-gave the same verdicts with different samples: 2 000 000 exact, 14 455 ns per
-locked iteration; without the lock 1 626 335 of 2 000 000, i.e. 18.7 % lost, with
-overlaps on both sides (77 Linux, 499 040 DSP).
+The loss rate **varies between runs** (5.3 %, 5.7 %, 17.3 %, 17.8 % and 18.7 %
+have been observed). Treat the percentage as one sample; the qualitative result
+is what reproduces.
 
-⚠️ **Both contention runs above were made with the cacheless bootloader** (see
-[The C906 caches](#the-c906-caches)). The images in this repository now enable
-the caches, so the per-iteration figures here no longer describe them; only the
-verdicts are expected to carry over. A matched re-run on the current images is
-pending and will land as a new file under `logs/`.
+These numbers are `logs/2026-10-25-lichee-rv-dock.log`. The previous images
+(2026-10-24) ran cacheless and are kept in
+`logs/2026-10-24-lichee-rv-dock.log` for comparison: same verdicts, but a locked
+iteration cost 14 455 ns there. The ~5.6× is the caches (see
+[The C906 caches](#the-c906-caches)), less the ~510 ns per iteration the shared
+block now spends on cache maintenance.
 
 The lock is not free, but most of what it costs is not the lock. Measured
 separately on the C906, 1 M iterations each, with the DSP polling:
@@ -92,9 +93,9 @@ the DSP idle and 31 ns with it polling, i.e. ~17 ns per MMIO access.
 | Linux | 7.3.0-rc7 + 3 hwspinlock patches + the MMC fix | [`ikruusa/linux` — `d1-cache-v1`](https://github.com/ikruusa/linux/tree/d1-cache-v1) |
 | U-Boot | 2026.10-rc4 + DSP remoteproc + C906 caches | [`ikruusa/u-boot` — `sun20i-dsp-cache-v1`](https://github.com/ikruusa/u-boot/tree/sun20i-dsp-cache-v1) |
 | OpenSBI | v1.9 | [`ikruusa/opensbi` — `sun20i-changes-v5`](https://github.com/ikruusa/opensbi/tree/sun20i-changes-v5) |
-| FreeRTOS | HiFi4, firmware rev 6 | [`ikruusa/FreeRTOS-HIFI4-DSP` — `d1-hwlock-test`](https://github.com/ikruusa/FreeRTOS-HIFI4-DSP/tree/d1-hwlock-test) |
+| FreeRTOS | HiFi4, firmware rev 8 | [`ikruusa/FreeRTOS-HIFI4-DSP` — `d1-hwlock-test`](https://github.com/ikruusa/FreeRTOS-HIFI4-DSP/tree/d1-hwlock-test) |
 | Buildroot | gcc 16.2.0, binutils 2.46.1 | [`ikruusa/buildroot` — `sun20i-dsp-v1`](https://github.com/ikruusa/buildroot/tree/sun20i-dsp-v1) |
-| Image | 126 877 696 B, sha256 `793e38b0…` | — |
+| Image | 126 877 696 B, sha256 `5638e620…` | — |
 
 The `Buildroot -ga5f207177b-dirty` in the log's `Linux version` line is the
 **toolchain's** build id, not this image's commit: gcc and binutils were built at
@@ -107,8 +108,8 @@ Both images are committed bzip2-compressed (127 MB → 7.98 MB):
 
 | File | Board | Image sha256 | Status |
 |---|---|---|---|
-| `images/sdcard-dock-dsp.img.bz2` | Lichee RV Dock | `793e38b0…` | built, **awaiting boot test** |
-| `images/sdcard-nezha-dsp.img.bz2` | Sipeed Nezha, 1 GB | `61db9a9e…` | built, **never booted** |
+| `images/sdcard-dock-dsp.img.bz2` | Lichee RV Dock | `5638e620…` | **tested on hardware** |
+| `images/sdcard-nezha-dsp.img.bz2` | Sipeed Nezha, 1 GB | `463dc1a1…` | built, **never booted** |
 
 ```
 sha256sum -c SHA256SUMS                            # the archives
@@ -153,30 +154,24 @@ Interrupt the 2-second countdown ("Hit any key to stop autoboot"), then:
 
 ```
 => ext4load mmc 0:1 0x42000000 /root/dsp/dsp.elf
-130476 bytes read in 17 ms (7.3 MiB/s)
-=> rproc init
-=> rproc list
-0 - Name:'dsp0' type:'internal memory mapped' supports: load start stop reset is_running
-=> rproc load 0 0x42000000 0x1fdac
-Load Remote Processor 0 with data@addr=0x42000000 130476 bytes: Success!
+=> rproc load 0 0x42000000 0x1fe0c
 => rproc start 0
 ```
 
-The DSP announces itself on the same UART:
+The DSP announces itself on the same UART; `fw rev 8` is the build this test
+needs (rev 6 and 7 predate the iteration-accounting fix and report a spurious
+FAIL):
 
 ```
- FreeRTOS for HIFI4 DSP v0.1.1, Build on xtensa-hifi4-elf-gcc
-==========================================================================
-vTaskStartScheduler
-hwlock: fw rev 6, shared @ 0x483ff000, stack top 0x48015f60
+hwlock: fw rev 8, shared @ 0x483ff000, stack top 0x48016030
 ```
 
-`0x1fdac` = 130476, the byte count `ext4load` prints. **`rproc load` parses its
-size as hex**, so the decimal figure cannot be used directly.
+`0x1fe0c` is 130 572, the firmware size, and **`rproc load` parses its size as
+hex** — the decimal figure printed by `ext4load` cannot be used directly. The
+size changes whenever the firmware grows.
 
-`rproc init` is not strictly required — `rproc load` probes the device on
-demand — but `rproc list` turns "load failed" into "no core found", which is the
-more useful error to see first.
+If `rproc load` fails, `rproc list` distinguishes "no core found" from a load
+that was rejected; neither is needed for a working run.
 
 ### 2. Boot Linux
 
@@ -197,46 +192,22 @@ stable. The same applies to anything else that would name the disk — use
 
 ### 3. Run both controls
 
-Log in as `root` (no password):
+Log in as `root` (no password), then:
 
 ```
-# ls /sys/bus/platform/drivers/sun6i_hwspinlock/
-3005000.hwlock  module          unbind
-bind            uevent
-
 # mount -t debugfs none /sys/kernel/debug
 # cat /sys/kernel/debug/sun6i_hwspinlock/supported
-32
-
 # modprobe d1_hwlock_test trials=1000000 dsp_timeout_ms=10000
-```
-
-Takes about 15 s:
-
-```
-counter=2000000 expected=2000000 -> EXACT
-tripwire linux=0 dsp=0 -> no overlap
-linux burst 14692768 us (14692 ns/iter)
-VERDICT: PASS
-```
-
-Then the negative control:
-
-```
 # rmmod d1_hwlock_test
 # modprobe d1_hwlock_test use_lock=0
 ```
 
-Takes about 3 s:
-
-```
-counter=1885761 expected=2000000 -> LOST UPDATES
-tripwire linux=100302 dsp=674915 -> OVERLAP DETECTED
-VERDICT: PASS (negative control failed as expected)
-```
+The `supported` file reports how many locks the driver found — 32 on the D1.
 
 The negative control is mandatory: without it, a pass could come from a test
-that structurally cannot fail.
+that structurally cannot fail. Expected verdicts and timings are in
+[Result](#result); the console transcript is
+`logs/2026-10-25-lichee-rv-dock.log`.
 
 ## Expected noise
 
@@ -258,6 +229,8 @@ cost real debugging time.
 | Commit | Note |
 |---|---|
 | [`b797617db94fd`](https://github.com/ikruusa/linux/commit/b797617db94fd) | sunxi-mmc: write back the IDMAC descriptors — without it the SD card is dead once the D-cache is on |
+| [`b4c8dec08c3a`](https://github.com/ikruusa/linux/commit/b4c8dec08c3a) | test module: invalidate/clean the shared line across cores — the lock alone buys nothing on a cached shared block |
+| [`c5241ab19b3b`](https://github.com/ikruusa/linux/commit/c5241ab19b3b) | test module: settle before reading the peer's results, and record why the earlier FAIL was a firmware off-by-one |
 | [`8bf0796a5c521`](https://github.com/ikruusa/linux/commit/8bf0796a5c521) | driver: get the clock and reset without names |
 | [`16c9b5f1f8c7f`](https://github.com/ikruusa/linux/commit/16c9b5f1f8c7f) | dt-bindings: compatible for Allwinner D1 |
 | [`db9ddbe1dffa4`](https://github.com/ikruusa/linux/commit/db9ddbe1dffa4) | DT node in `sunxi-d1-t113.dtsi` |
@@ -284,10 +257,12 @@ cost real debugging time.
 ### FreeRTOS
 
 [`13fb0ff`](https://github.com/ikruusa/FreeRTOS-HIFI4-DSP/commit/13fb0ff) — the DSP side of the contention test ·
-[`209a52b`](https://github.com/ikruusa/FreeRTOS-HIFI4-DSP/commit/209a52b) firmware rev 6 — the DSP side of the benchmark, and no printing while it runs
+[`209a52b`](https://github.com/ikruusa/FreeRTOS-HIFI4-DSP/commit/209a52b) firmware rev 6 — the DSP side of the benchmark, and no printing while it runs ·
+[`bc9d87e`](https://github.com/ikruusa/FreeRTOS-HIFI4-DSP/commit/bc9d87e) firmware rev 8 — count executed iterations instead of the loop variable; under-reporting by one turned clean runs into FAIL
 
 ### Buildroot
 
+[`1746e551db`](https://github.com/ikruusa/buildroot/commit/1746e551db) firmware rev 8 in both overlays ·
 [`babb594308`](https://github.com/ikruusa/buildroot/commit/babb594308) build from the cache-enabled branches ·
 [`7ec69192c7`](https://github.com/ikruusa/buildroot/commit/7ec69192c7) image target ·
 [`a5f207177b`](https://github.com/ikruusa/buildroot/commit/a5f207177b) branch-level pins ·
@@ -315,8 +290,8 @@ cost real debugging time.
 - **Do not read `0x00400000` from Linux.** Once the DSP owns its local SRAM,
   that access hangs the bus with no oops. Shared memory has to live in DDR;
   these tests use `0x483ff000`.
-- **`0x1fdac` is a hex size.** The size also feeds a sanity check against
-  `e_shoff + sizeof(Elf32_Shdr)` (129 132 for this build), so a stale value is
+- **`0x1fe0c` is a hex size.** The size also feeds a sanity check against
+  `e_shoff + sizeof(Elf32_Shdr)` (129 412 for this build), so a stale value is
   tolerated only until the firmware grows past it.
 
 ## License
