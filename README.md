@@ -4,10 +4,6 @@ Reproducible images and raw console logs for exercising the **sun6i hardware
 spinlock** block on Allwinner D1, with the C906 running Linux and the Cadence
 Tensilica **HiFi4** running FreeRTOS as the second bus master.
 
-Everything here is **test scaffolding**, not upstream material. The only piece
-intended for submission is the driver series in the linux tree, linked under
-[Provenance](#provenance).
-
 ## Result
 
 | | with lock | without lock |
