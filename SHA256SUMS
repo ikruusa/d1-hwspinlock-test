@@ -1,5 +1,5 @@
 # Archives as shipped in this repository:
 #   sha256sum -c SHA256SUMS
 # The decompressed images are covered by SHA256SUMS.images.
-d231b661002a170733af342fd9bd982c041062758544a43e208d4dc704da2d9e  images/sdcard-dock-dsp.img.bz2
-b9068e1874a5b8490bf6fc0d8acce5b546e54d7ad5d90ffa0323bede6708906f  images/sdcard-nezha-dsp.img.bz2
+c673b8f745c1442f689a620bda3baa79f49bcb449747d43ef428e386f0dd80e8  images/sdcard-dock-dsp.img.bz2
+46bd3ff7b3c01af2c63e6726cb50a4823169e979c6a13d7194fc8160bd7a03ac  images/sdcard-nezha-dsp.img.bz2
