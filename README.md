@@ -114,7 +114,7 @@ image itself comes from the branches above either way.
 
 ## Prebuilt images
 
-Both images are committed bzip2-compressed (127 MB → 7.98 MB):
+Both images are committed bzip2-compressed (127 MB → ~8 MB):
 
 | File | Board | Image sha256 | Status |
 |---|---|---|---|
